@@ -28,25 +28,42 @@ app.get("/usuarios/:id", async (req, res)=>{
     res.send(results)
 })
 
-app.post("/usuarios", async (req, res)=>{
+app.post("/registro", async (req, res)=>{
   try{
     const { body } = req;
      const [results] = await pool.query(
-        "INSERT INTO usuario (nome, idade) VALUES (?,?)",
-        [body.nome, body.idade],
+        "INSERT INTO usuario (nome, email, senha, idade) VALUES (?,?,?,?)",
+        [body.nome, body.email, body.senha, body.idade],
       );
 
-      const [usuarioCriado] = await pool.query(
+      const [usuarioRegistrado] = await pool.query(
         "select * from usuario WHERE id_usuario=?",
         results.insertId
-      )
+      );
 
     
-       return res.status(201).json(usuarioCriado)
+       return res.status(201).json(usuarioRegistrado)
   } catch (error) {
     console.log(error);
   }
 });
+
+app.post("/login", async (req, res) => {
+  try {
+    const {body} = req;
+    const [results] = await pool.query("SELECT * FROM usuario WHERE email=? and senha=?", [body.email, body.senha]);
+
+    if (results.length >0) {
+      return res.status (200).send("Login realizado com sucesso!")
+    } else {
+      return res.status(404).send("Email ou Senha incorreto!")
+    } 
+  } catch (error) {
+    console.log (error)
+  }
+})
+
+
 
 app.delete("/usuarios/:id", async(req, res)=>{
   try{
